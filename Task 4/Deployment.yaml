@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: database-server-deployment
+  labels:
+    app: database-server
+spec:
+  selector:
+    matchLabels:
+      app: database-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: database-server
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: database-server
+        image: mysql:8.0.33-debian
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: basic-auth
+              key: password
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: secret-mount
+          mountPath: /etc/secret
+          readOnly: true
+
+      volumes:
+      - name: secret-mount
+        secret:
+          secretName: basic-auth
+
+        
